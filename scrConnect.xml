@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aaScript name="scrConnect">
+  <ScriptExecutionGroup>Before outputs</ScriptExecutionGroup>
+  <ScriptOrder>32000</ScriptOrder>
+  <OffScanText />
+  <OnScanText />
+  <ShutdownText />
+  <StartupText />
+  <Expression>Me.CMD.Connect</Expression>
+  <TriggerType>WhileTrue</TriggerType>
+  <TriggerPeriod>00:00:00.0000000</TriggerPeriod>
+  <TriggerOnQualityChange>false</TriggerOnQualityChange>
+  <ExecuteTimeoutLimit>0</ExecuteTimeoutLimit>
+  <RunsAsync>false</RunsAsync>
+  <ExecuteText>{
+'*********************************************** 
+Author		Andy Robinson (Phase 2 Automation)
+Purpose		Connect Socket for Sending Data
+ 
+Revision History 
+Rev		Date		By		Comment 
+0		11/30/14	APR		Initial Issue 
+ 
+************************************************ 
+}
+
+	' Reset the connection command
+	Me.CMD.Connect = false;
+
+	' Always clear the Status Connected UDA when we are rebuilding the socket connection
+	Me.Status.IsConnected = false;
+
+	' Calculate APP Domain Object Name
+	if Me._SocketAppDomainName == "" then
+		Me._SocketAppDomainName = Me.Config.HostAddress+":"+Me.Config.Port+":TCP";
+
+		if Me.Flag.Debug.Level &gt; 0 then
+			LogMessage("Set _SocketAppDomainName to " + Me._SocketAppDomainName);
+		endif;
+
+	endif;
+
+	LogMessage("Checking to see if Socket is null");
+	if vSocket == null then
+		LogMessage("Socket is Null.  Retrieving vSocket from AppDomain " + Me._SocketAppDomainName);
+		' Get the object from the app domain
+		vSocket = System.AppDomain.CurrentDomain.GetData(Me._SocketAppDomainName);
+		LogMessage("Retrieved vSocket from AppDomain");
+	endif;
+
+	LogMessage("Checking again for Socket is null.");
+	if vSocket == null then
+		LogMessage("Socket still null.  Setting IsConnected to False");
+		Me.Status.IsConnected = false;
+	else
+		LogMessage("Socket Not Null.  Checking connected status");
+		try
+			Me.Status.IsConnected = vSocket.Connected;
+		catch
+			LogMessage("Checking socket connected status failed.  Setting Me.Status.IsConnected to False");
+			Me.Status.IsConnected = false;
+		endtry;
+	endif;
+
+	LogMessage("Final Connection Status, Me.Status.IsConnected : " + Me.Status.IsConnected);
+
+	if (Me.Status.IsConnected == false) then
+		try
+			LogMessage("Socket is not connected so creating new socket connection to " + Me.Config.HostAddress + ":" + Me.Config.Port);
+			vSocket = new System.Net.Sockets.TcpClient(Me.Config.HostAddress,Me.Config.Port);
+			LogMessage("created socket");
+
+			try
+				LogMessage("Checking to see if socket is connected");
+				Me.Status.IsConnected = vSocket.Connected;
+			catch
+				LogMessage("Failed to check connection due to error");
+				Me.Status.IsConnected = false;
+				LogError(error.ToString());
+			endtry;
+
+			LogMessage("Me.Status.IsConnected = " + Me.Status.IsConnected);			
+
+		catch;
+			LogError(error.ToString());
+		endtry;
+	endif;
+
+	if Me.Status.IsConnected then
+		LogMessage("Saving Socket to App Domain with object name " + Me._SocketAppDomainName);
+		' Save the socket connection to the app domain
+		System.AppDomain.CurrentDomain.SetData(Me._SocketAppDomainName,vSocket);
+	endif;
+</ExecuteText>
+</aaScript>

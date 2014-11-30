@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aaScript name="scrReconnect">
+  <ScriptExecutionGroup>Before outputs</ScriptExecutionGroup>
+  <ScriptOrder>32002</ScriptOrder>
+  <OffScanText />
+  <OnScanText />
+  <ShutdownText />
+  <StartupText />
+  <Expression>(Me.Status.IsConnected == false and Me.CMD.Connect == false)</Expression>
+  <TriggerType>WhileTrue</TriggerType>
+  <TriggerPeriod>00:00:10.0000000</TriggerPeriod>
+  <TriggerOnQualityChange>false</TriggerOnQualityChange>
+  <ExecuteTimeoutLimit>0</ExecuteTimeoutLimit>
+  <RunsAsync>false</RunsAsync>
+  <ExecuteText>{
+'*********************************************** 
+Author		Andy Robinson (Phase 2 Automation)
+Purpose		Set the connection command if we are not 
+			connected and we are not currently trying to connect.
+			This is a nice generic way to handle triggering the reconnect.
+
+			User should tune the trigger period to suit your needs
+ 
+Revision History 
+Rev		Date		By		Comment 
+0		11/30/14	APR		Initial Issue 
+ 
+************************************************ 
+}
+
+LogMessage("Setting CMD.Connect due to IsConnected = False");
+Me.CMD.Connect = true;</ExecuteText>
+</aaScript>

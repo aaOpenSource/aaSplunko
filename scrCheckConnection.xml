@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aaScript name="scrCheckConnection">
+  <ScriptExecutionGroup>Before outputs</ScriptExecutionGroup>
+  <ScriptOrder>32004</ScriptOrder>
+  <OffScanText />
+  <OnScanText />
+  <ShutdownText />
+  <StartupText />
+  <Expression />
+  <TriggerType>Periodic</TriggerType>
+  <TriggerPeriod>00:01:00.0000000</TriggerPeriod>
+  <TriggerOnQualityChange>false</TriggerOnQualityChange>
+  <ExecuteTimeoutLimit>0</ExecuteTimeoutLimit>
+  <RunsAsync>false</RunsAsync>
+  <ExecuteText>{
+'*********************************************** 
+Author		Andy Robinson (Phase 2 Automation)
+Purpose		Periodically check the status of the 
+			socket connection.
+			User should tune the periodic time to suit your needs
+ 
+Revision History 
+Rev		Date		By		Comment 
+0		11/30/14	APR		Initial Issue 
+ 
+************************************************ 
+}
+
+dim vSocket as System.Net.Sockets.TcpClient;
+
+try
+	' Get the object from the app domain
+	vSocket = System.AppDomain.CurrentDomain.GetData(Me._SocketAppDomainName);
+	
+	' Check to see if the socket is null
+	if vSocket == null then
+		Me.Status.IsConnected = false;
+	else
+		Me.Status.IsConnected = vSocket.Connected;
+	endif;
+catch
+	LogError(error.ToString());
+endtry;
+
+
+
+</ExecuteText>
+</aaScript>

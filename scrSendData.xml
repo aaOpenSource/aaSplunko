@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aaScript name="scrSendData">
+  <ScriptExecutionGroup>Before outputs</ScriptExecutionGroup>
+  <ScriptOrder>32006</ScriptOrder>
+  <OffScanText />
+  <OnScanText />
+  <ShutdownText />
+  <StartupText />
+  <Expression>Me.Value</Expression>
+  <TriggerType>DataChange</TriggerType>
+  <TriggerPeriod>00:00:00.0000000</TriggerPeriod>
+  <TriggerOnQualityChange>false</TriggerOnQualityChange>
+  <ExecuteTimeoutLimit>0</ExecuteTimeoutLimit>
+  <RunsAsync>false</RunsAsync>
+  <ExecuteText>{
+'*********************************************** 
+Author		Andy Robinson (Phase 2 Automation)
+Purpose		Send the data to splunk via JSON over an open 
+			TCP Socket
+
+			User should fine tune the script basics and execution text
+			to suit their requirements.
+ 
+Revision History 
+Rev		Date		By		Comment 
+0		11/30/14	APR		Initial Issue 
+ 
+************************************************ 
+}
+
+
+' Don't bother trying to send data if we are not connected
+if Me.Status.IsConnected then
+	
+	' Try to get the socket from the app domain. 
+	' This is much more efficient than creating and destroying the socket over and over
+	' Also it is much more scalable as you could use a single socket for multiple objects from a single engine.
+	try
+		if vSocket == null then
+			' Get the object from the app domain
+			LogMessage("Socket is Null.  Retrieving vSocket from AppDomain " + Me._SocketAppDomainName);
+			vSocket = System.AppDomain.CurrentDomain.GetData(Me._SocketAppDomainName);
+			LogMessage("Retrieved vSocket from AppDomain");
+		endif;
+
+		if localSB == null then
+			localSB = new System.Text.StringBuilder();
+		else	
+			localSB.Clear();
+		endif;
+
+	
+		' Build the JSON string to suit your needs.  This is a typical example of what you might send
+		localSB.Append("{");
+
+		localSB.Append(StringChar(34) + "timestamp" + StringChar(34) + ":");
+		'localTimestamp = System.DateTime.Parse(Me.Value.Time);
+		'localSB.Append(localTimestamp.ToString(Me.Config.TimestampFormat));
+		localSB.Append(Me.Value.Time);
+
+		' Note that I am sending the timestamp of the value, not the timestamp of Now().  This is a more accurate method.
+		' Also note the use of manipulating the format to exactly what we want
+		localSB.Append(",");
+
+		localSB.Append(StringChar(34) + "tagname" + StringChar(34) + ":");
+		localSB.Append(Me.Tagname);
+		localSB.Append(",");
+
+		localSB.Append(StringChar(34) + "description" + StringChar(34) + ":");
+		localSB.Append(StringChar(34) + Me.ShortDesc + StringChar(34));
+		localSB.Append(",");
+
+		localSB.Append(StringChar(34) + "value" + StringChar(34) + ":");
+		localSB.Append(StringChar(34) + Me.Value + StringChar(34));
+		localSB.Append(",");
+
+		localSB.Append(StringChar(34) + "quality" + StringChar(34) + ":");
+		localSB.Append(Me.Value.Quality);
+
+		localSB.Append("}");
+
+		if Me.Flag.Debug.Level &gt; 5 then
+			LogMessage("localSB : " + localSB.ToString());
+		endif;
+
+
+		' Check to see if we can write.  This means we have already gotten the GetStream() from the Socket
+		if (ServerStream == null) then
+			LogMessage("Connecting to Socket Stream");
+			ServerStream = vSocket.GetStream();
+		endif;
+
+		' Make sure we can write
+		if ServerStream.CanWrite then
+
+			if (StreamWriter == null) then
+				LogMessage("Creating StreamWriter"); 
+				StreamWriter = new System.IO.StreamWriter(ServerStream);
+			endif;
+
+			' Always writeline to close the message.  If you use Write then the message stays open and doesn't work correctly
+			StreamWriter.WriteLine(localSB.ToString());
+	
+			if Me.Flag.Debug.Level &gt; 5 then
+				LogMessage("Write to StreamWriter complete.");
+			endif;
+
+			' Always flush after you are done with all the writes
+			' If we were writing multiple WriteLine messages then we would flush at the end of at regular intervals.
+			StreamWriter.Flush();		
+
+			if Me.Flag.Debug.Level &gt; 5 then
+				LogMessage("StreamWriter Flushed");
+			endif;
+
+		else		
+			LogWarning("ServerStream not ready for writing");
+		endif;
+		
+	catch
+		LogMessage(error.ToString());
+	endtry;
+endif;</ExecuteText>
+</aaScript>

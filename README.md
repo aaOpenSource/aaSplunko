@@ -7,9 +7,6 @@ A set of scripts for a system platform object to send data to a [Splunk Enterpri
 
 Recently (late 2014) [Kepware](http://www.kepware.com) introduced what they called the [Industrial Data Forwarder](http://www.kepware.com/spec-sheets/industrial-data-forwarder-for-splunk.asp).  I knew at the most basic level that sending data to Splunk was not a difficult matter so that inspired me to write an example object showing you how you can do the same thing from a System Platform object. 
 
-I think there are some huge opportunities for sending some of this data to Splunk in addition to a traditional Historian.  For starters, and apologies in advance to Schneider/Invensys/Wonderware, but the cost of Splunk Enterprise is a fraction of the cost of the Historian.  Yes the Historian may be more efficient at storing data but frankly these days disk space is dirt cheap so that's not a great differentiator any more.  Also the out of the box visualization tools provided with Splunk are really stunning and so much more powerful than anything Wonderware is currently providing.  My general feeling on the topic is that the "rest of the world" has solved some really basic problems and it's time the automation world started to recognize that others are doing some things much better, faster, and cheaper than the proprietary tools we have to slave with.  Yes, the Historian Client is a very nice tool and is very powerful but I suspect with a little HTML5/CSS/jQuery magic someone could produce a web based interface to this Splunk data that does about 95% of what the current Historian client tool does.  It's not so much the cost as it is the cost model.  Should I really pay the same price for a boolean tag that changes 10 times a day vs a floating point that changes every 250ms?  I think WW is on to something with the pricing model for Historian online being user based but still seems odd.  To be fair this does give much more predictable pricing for customers and I can empathize... is it acceptable in Web 2.0 world to rant in a GitHub readme?  Anyway, on  to the good stuff.
-
-
 ## Installation
 
 I am using Elliot Landrums [aaTemplateExtract](https://github.com/aaOpenSource/aaTemplateExtract) tool to extract all of the scripts. Unfortunately it does not yet extract UDA's.  So here is a list of the UDA's and types you need to create to support the scripts.
@@ -25,10 +22,10 @@ I am using Elliot Landrums [aaTemplateExtract](https://github.com/aaOpenSource/a
 
 You will also need these declarations for each of these scripts because they are not exported with the aaTemplateExtract tool.  I have added a [TODO](https://github.com/aaOpenSource/aaTemplateExtract/blob/master/TODO.md) for Eliot on this.
 
-- scrConnect
+scrConnect
     
     dim vSocket as System.Net.Sockets.TcpClient;
-        
+
 scrSendData
 
     dim vSocket as System.Net.Sockets.TcpClient;
